@@ -4,7 +4,6 @@
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
 ;; Version: 0.1
-;; Package-Requires ((seq "2.19"))
 
 ;;; Commentary:
 
@@ -12,7 +11,8 @@
 
 ;;; Code:
 
-(require 'seq)
+(require 'cl-lib)
+(require 'subr-x)
 
 (defun argmin (items)
   "Return min value index for ITEMS."
@@ -20,10 +20,9 @@
         (min-value (car items))
         (current-index 1))
     (dolist (item (cdr items))
-      (if (< item min-value)
-          (progn
-            (setq min-index current-index)
-            (setq min-value item)))
+      (when (< item min-value)
+        (setq min-index current-index)
+        (setq min-value item))
       (setq current-index (+ 1 current-index)))
     min-index))
 
@@ -66,11 +65,11 @@ Assume a list of form '(not P) for negation."
 
 (defun wsat-satisfied-clause (statement assignment)
   "Get all satisfied clause from the STATEMENT under ASSIGNMENT."
-  (seq-filter (lambda (c) (wsat-clause-true? c assignment)) statement))
+  (cl-remove-if (lambda (c) (not (wsat-clause-true? c assignment))) statement))
 
 (defun wsat-unsatisfied-clause (statement assignment)
   "Get all unsatisfied clause from the STATEMENT under ASSIGNMENT."
-  (seq-remove (lambda (c) (not (wsat-clause-true? c assignment))) statement))
+  (cl-remove-if (lambda (c) (wsat-clause-true? c assignment)) statement))
 
 (defun wsat-count-unsatisfaction (statement assignment sym)
   "Count the number of unsatisfied clause in STATEMENT with an ASSIGNMENT flip of SYM."
