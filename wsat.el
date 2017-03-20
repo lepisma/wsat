@@ -101,20 +101,26 @@ Compared to given STATEMENT under ASSIGNMENT."
     (puthash sym (not current) new-assignment)
     new-assignment))
 
+(defun wsat-print-assignment (assignment)
+  "Pretty print the symbol ASSIGNMENT."
+  (print (format "Assignment %s -> %s"
+                 (hash-table-keys assignment)
+                 (hash-table-values assignment))))
+
 (defun wsat-solve (statement symbols max-iterations max-restarts)
   "Solve the problem STATEMENT by working on SYMBOLS.
 Go for MAX-ITERATIONS mutations and MAX-RESTARTS resets."
   (if (>= max-restarts 0)
       (let ((assignment (wsat-random-assigment symbols)))
-        (print (format "Initial assignment %s -> %s"
-                       (hash-table-keys assignment)
-                       (hash-table-values assignment)))
+        (print "Starting from")
+        (wsat-print-assignment assignment)
         (print (format "%d restarts left" max-restarts))
         (catch 'solved
           (dotimes (i max-iterations)
             (if (wsat-statement-true? statement assignment)
                 (progn
                   (print (format "Solved in %d iterations" i))
+                  (wsat-print-assignment assignment)
                   (throw 'solved assignment))
               (setq assignment
                     (wsat-flip-assignment
@@ -125,7 +131,7 @@ Go for MAX-ITERATIONS mutations and MAX-RESTARTS resets."
           ;; Restart with another random position
           (wsat-solve statement symbols max-iterations (- max-restarts 1))))
     (print "Max number of restarts reached")
-    nil))
+nil))
 
 (provide 'wsat)
 
